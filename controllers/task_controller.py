@@ -60,7 +60,7 @@ def register_routes(app):
             'completed_count': 0
         }
 
-        return render_template('task_list.html', **context)
+        return render_template('task_list.html', **context) 
  
     
     @app.route('/tasks/new', methods=['GET', 'POST'])
@@ -75,10 +75,21 @@ def register_routes(app):
             str: HTML del formulario o redirección tras crear la tarea
         """
         if request.method == 'POST':
-            pass # TODO: implementar para una solicitud POST
+         # TODO: implementar para una solicitud POST
+           title = request.form['title']
+           description = request.form.get('description')
+           due_date_str = request.form.get('due_date')
+           due_date = datetime.strptime(due_date_str, '%Y-%m-%dT%H:%M') if due_date_str else None
+            
+           new_task = Task(title=title, description=description, due_date=due_date)
+           new_task.save()
+            
+           flash('Tarea creada exitosamente!', 'success')
+           return redirect(url_for('task_list'))
         
         # Mostrar formulario de creación
-        pass # TODO: implementar para una solicitud GET
+       # TODO: implementar para una solicitud GET
+        return render_template('task_form.html') 
     
     
     @app.route('/tasks/<int:task_id>')
@@ -92,7 +103,9 @@ def register_routes(app):
         Returns:
             str: HTML con los detalles de la tarea
         """
-        pass # TODO: implementar el método
+     # TODO: implementar el método
+        task = Task.query.get_or_404(task_id)
+        return render_template('task_detail.html', task=task)
     
     
     @app.route('/tasks/<int:task_id>/edit', methods=['GET', 'POST'])
@@ -109,11 +122,24 @@ def register_routes(app):
         Returns:
             str: HTML del formulario o redirección tras editar
         """
+        
+         # TODO: implementar para una solicitud POST
+        task = Task.query.get_or_404(task_id)
+        
         if request.method == 'POST':
-            pass # TODO: implementar para una solicitud POST
+            task.title = request.form['title']
+            task.description = request.form.get('description')
+            task.completed = 'completed' in request.form
+            due_date_str = request.form.get('due_date')
+            task.due_date = datetime.strptime(due_date_str, '%Y-%m-%dT%H:%M') if due_date_str else None
+            task.save()
+            
+            flash('Tarea actualizada exitosamente!', 'success')
+            return redirect(url_for('task_list'))
         
         # Mostrar el formulario para editar la tarea
-        pass # TODO: implementar para una solicitud GET
+         # TODO: implementar para una solicitud GET
+        return render_template('task_form.html', task=task)
     
     
     @app.route('/tasks/<int:task_id>/delete', methods=['POST'])
@@ -127,7 +153,12 @@ def register_routes(app):
         Returns:
             Response: Redirección a la lista de tareas
         """
-        pass # TODO: implementar el método
+        # TODO: implementar el método
+        task = Task.query.get_or_404(task_id)
+        task.delete()
+        
+        flash('Tarea eliminada exitosamente!', 'success')
+        return redirect(url_for('task_list'))
     
     
     @app.route('/tasks/<int:task_id>/toggle', methods=['POST'])
@@ -141,7 +172,18 @@ def register_routes(app):
         Returns:
             Response: Redirección a la lista de tareas
         """
-        pass # TODO: implementar el método
+         # TODO: implementar el método
+        task = Task.query.get_or_404(task_id)
+        if task.completed:
+            task.mark_pending()
+            flash('Tarea marcada como pendiente.', 'info')
+        else:
+            task.mark_completed()
+            flash('Tarea marcada como completada.', 'success')
+        
+        task.save()
+        
+        return redirect(url_for('task_list'))
     
     
     # Rutas adicionales para versiones futuras

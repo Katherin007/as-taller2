@@ -7,12 +7,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import config
 import os
+from dotenv import load_dotenv
 
 # Crear instancia de SQLAlchemy
 db = SQLAlchemy()
 
 
 def create_app(config_name=None):
+    load_dotenv()
     """
     Factory function para crear y configurar la aplicación Flask
     
